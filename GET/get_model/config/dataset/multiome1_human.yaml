@@ -1,0 +1,9 @@
+zarr_path: ${oc.env:GET_MULTIOME_ZARR}
+celltypes: cardiac_fibroblasts,cardiac_progenitor_cells,early_ectoderm,glial_cells,hepatocytes,mesoderm_ii,neural_crest_i,neurons,smooth_muscle_cells
+num_region_per_sample: 200
+transform: null
+leave_out_chromosomes: null
+quantitative_atac: true
+sampling_step: 100
+mask_ratio: 0.0
+leave_out_celltypes: hepatocytes

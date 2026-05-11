@@ -1,0 +1,6 @@
+data_path: "${oc.env:GET_REPO}/data/"
+codebase: "${oc.env:GET_REPO}/"
+output_dir: "${oc.env:GET_COURSE_WORK}/output/"
+num_devices: 1
+num_workers: 4
+batch_size: 16

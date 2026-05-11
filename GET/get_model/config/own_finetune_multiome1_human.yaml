@@ -1,0 +1,44 @@
+defaults:
+  - base_region_zarr_config
+  - model/GETRegionFinetune@_here_
+  - finetune: v1_finetune
+  - machine: course_server
+  - dataset: multiome1_human
+  - training: finetune
+  - task: interpret
+  - _self_
+
+assembly: "hg38"
+
+optimizer:
+  lr: 0.0001
+  min_lr: 0.0001
+  weight_decay: 0.05
+  opt: "adamw"
+  opt_eps: 1e-8
+  opt_betas: [0.9, 0.999]
+
+run:
+  project_name: "finetune_multiome1_human"
+  run_name: "lora_leaveout_hepatocytes"
+  use_wandb: false
+
+finetune:
+  pretrain_checkpoint: false
+  strict: true
+  use_lora: true
+  checkpoint: ${oc.env:GET_PRETRAINED_CKPT}
+  lora_checkpoint: null
+  lora_rename_config:
+    "model.": ""
+  layers_with_lora: ['region_embed', 'encoder']
+  patterns_to_freeze: []
+
+eval_tss: true
+log_image: true
+
+hydra:
+  job:
+    name: ${run.project_name}_${run.run_name}
+  run:
+    dir: ${machine.output_dir}/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}/

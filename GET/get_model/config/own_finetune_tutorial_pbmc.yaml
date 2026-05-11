@@ -1,0 +1,41 @@
+defaults:
+  - base_region_zarr_config
+  - model/GETRegionFinetune@_here_
+  - finetune: v1_finetune
+  - machine: jhub
+  - dataset: pbmc10k_multiome
+  - training: finetune
+  - task: interpret
+  - _self_
+
+assembly: "hg38"
+
+optimizer:
+  lr: 0.0001
+  min_lr: 0.0001
+  weight_decay: 0.05
+  opt: "adamw"
+  opt_eps: 1e-8
+  opt_betas: [0.9, 0.999]
+
+run:
+  project_name: "finetune_pbmc10k_multiome" # set a project name you want to use
+  run_name: "training_from_finetune_lora_cd4_tcm_no_chr_split" # set a run name you want to use for this particular run
+  use_wandb: false # set to true if you want to use wandb for logging
+
+finetune:
+  pretrain_checkpoint: false
+  strict: true
+  use_lora: true # set to true if you want to use LoRA finetuning
+  checkpoint: ${oc.env:GET_PRETRAINED_CKPT}
+  layers_with_lora: ['region_embed', 'encoder'] # set the layers you want to apply LoRA to
+  patterns_to_freeze: []
+
+eval_tss: true
+log_image: true
+
+hydra:
+  job:
+    name: ${run.project_name}_${run.run_name}
+  run:
+    dir: ${machine.output_dir}/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}/

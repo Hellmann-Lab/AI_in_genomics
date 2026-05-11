@@ -1,0 +1,9 @@
+zarr_path: ${oc.env:GET_REPO}/tutorials/pbmc10k_multiome.zarr
+celltypes: memory_b,cd14_mono,gdt,cd8_tem_1,naive_b,mait,intermediate_b,cd4_naive,cd8_tem_2,cd8_naive,cd4_tem,cd4_tcm,cd16_mono,nk,cdc,treg
+num_region_per_sample: 200
+transform: null
+leave_out_chromosomes: null
+quantitative_atac: true
+sampling_step: 100
+mask_ratio: 0.0
+leave_out_celltypes: cd4_tcm
