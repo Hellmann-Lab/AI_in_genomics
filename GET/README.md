@@ -60,6 +60,7 @@ See [docs/course/data.md](docs/course/data.md) for the exact expected large-file
 - [Setup and server layout](docs/course/setup.md)
 - [Data inventory](docs/course/data.md)
 - [Pipeline details](docs/course/pipeline.md)
+- [Interactive Python and Jupyter](docs/course/interactive_python.md)
 - [Troubleshooting](docs/course/troubleshooting.md)
 - [Reference run summary](docs/course/multiome1_reference_run_summary.md)
 

@@ -59,6 +59,17 @@ export GET_LORA_CKPT=/path/to/best.ckpt
 bash scripts/course_05_infer_finetuned.sh
 ```
 
+## Jupyter Lab port is already in use
+
+Choose another port before starting the container Jupyter server:
+
+```bash
+export GET_JUPYTER_PORT=8891
+bash scripts/course_jupyter_lab_container.sh
+```
+
+Use the same port in any SSH tunnel.
+
 ## Hydra says a path is missing
 
 Run:

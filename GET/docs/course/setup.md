@@ -49,3 +49,14 @@ $GET_RSCRIPT tutorials/prepare_multiome1_human.R
 ```
 
 All later Python steps run inside the Apptainer image.
+
+## Interactive Python
+
+Students can use the server JupyterHub for analysis notebooks, or start Jupyter Lab inside the GET container when they need the exact course Python environment:
+
+```bash
+cd ~/AI_in_genomics/GET
+bash scripts/course_jupyter_lab_container.sh
+```
+
+See [interactive_python.md](interactive_python.md) for details, including SSH port forwarding and JupyterHub notes.
