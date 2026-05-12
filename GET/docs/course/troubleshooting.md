@@ -49,7 +49,7 @@ bash scripts/course_03_finetune_lora.sh training.use_fp16=true
 The default path is:
 
 ```text
-$GET_COURSE_WORK/output/finetune_multiome1_human/lora_leaveout_hepatocytes/checkpoints/best.ckpt
+$GET_COURSE_WORK/output/finetune_multiome1_human/lora_leaveout_neurons/checkpoints/best.ckpt
 ```
 
 Override it with:

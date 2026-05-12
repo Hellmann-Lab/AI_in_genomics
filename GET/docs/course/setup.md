@@ -13,7 +13,7 @@ The repo should not contain generated artifacts. Students can remove and recreat
 The wrapper scripts set sensible defaults, but all paths can be overridden:
 
 ```bash
-export GET_REPO=$HOME/get_model
+export GET_REPO=$HOME/AI_in_genomics/GET
 export GET_COURSE_DATA=$HOME/GET_course_data
 export GET_COURSE_WORK=$HOME/GET_course_work
 export GET_SIF=$GET_COURSE_WORK/container/get.sif

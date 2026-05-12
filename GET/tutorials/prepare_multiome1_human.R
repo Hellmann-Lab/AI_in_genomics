@@ -48,7 +48,7 @@ out_dir <- getenv_default(
   "GET_PREPROCESSED_DIR",
   file.path(course_work, "multiome_1", "preprocessed")
 )
-min_cells <- 30   # keep hepatocytes (~50) but drop very small groups (iPSCs=8, epithelial=18)
+min_cells <- 100  # drop small groups, including hepatocytes (~50), epithelial cells, and iPSCs
 
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 

@@ -20,7 +20,7 @@ optimizer:
 
 run:
   project_name: "finetune_multiome1_human"
-  run_name: "lora_leaveout_hepatocytes"
+  run_name: "lora_leaveout_neurons"
   use_wandb: false
 
 finetune:

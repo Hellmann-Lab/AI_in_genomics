@@ -7,7 +7,7 @@ This repository is the course copy of GET with the local multiome1 tutorial patc
 The teaching server should contain one copy of this repo in each student home, plus a separate data directory with the non-Git inputs. The default layout is:
 
 ```text
-~/get_model/          # this repository
+~/AI_in_genomics/GET/ # this course module
 ~/GET_course_data/    # transferred input data and pretrained checkpoint
 ~/GET_course_work/    # generated zarrs, checkpoints, inference outputs
 ```
@@ -15,7 +15,7 @@ The teaching server should contain one copy of this repo in each student home, p
 From the repo root:
 
 ```bash
-cd ~/get_model
+cd ~/AI_in_genomics/GET
 
 bash scripts/course_00_check_environment.sh
 bash scripts/course_01_prepare_multiome1.sh
@@ -61,7 +61,7 @@ See [docs/course/data.md](docs/course/data.md) for the exact expected large-file
 - [Data inventory](docs/course/data.md)
 - [Pipeline details](docs/course/pipeline.md)
 - [Troubleshooting](docs/course/troubleshooting.md)
-- [Reference run summary](docs/course/multiome1_human_hepatocyte_run_report.md)
+- [Reference run summary](docs/course/multiome1_reference_run_summary.md)
 
 ## Upstream GET
 

@@ -2,7 +2,7 @@
 
 Inputs
 ------
-- interpret_ft_hepatocytes/hepatocytes.zarr  (fine-tuned LoRA inference)
+- interpret_ft_neurons/neurons.zarr  (fine-tuned LoRA inference)
 - input_data/multiome_1/preprocessed/multiome1_human.zarr (motif names)
 
 Per (sample, region) we extract:
@@ -46,7 +46,7 @@ sns.set_style("whitegrid")
 
 COURSE_WORK = Path(os.environ.get("GET_COURSE_WORK", Path.home() / "GET_course_work"))
 OUT_ROOT = COURSE_WORK / "output" / "finetune_multiome1_human"
-FT_ZARR = Path(os.environ.get("GET_FT_INTERPRET_ZARR", OUT_ROOT / "interpret_ft_hepatocytes" / "hepatocytes.zarr"))
+FT_ZARR = Path(os.environ.get("GET_FT_INTERPRET_ZARR", OUT_ROOT / "interpret_ft_neurons" / "neurons.zarr"))
 OUT_DIR = Path(os.environ.get("GET_DISTANCE_OUT_DIR", OUT_ROOT / "distance_model_comparison"))
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 print("Output dir:", OUT_DIR)
@@ -534,7 +534,7 @@ ax.plot(d_plot, decay_df["mean_g_closed"], "^-", label="closed (a_r < median)", 
 ax.set_xscale("log")
 ax.set_xlabel("|distance TSS -> region|  (bp, log scale)")
 ax.set_ylabel("mean |GET motif-only importance|")
-ax.set_title("Empirical decay of |g_r| with distance (fine-tuned hepatocytes)")
+ax.set_title("Empirical decay of |g_r| with distance (fine-tuned neurons)")
 ax.legend()
 fig.tight_layout()
 fig.savefig(OUT_DIR / "empirical_decay.png", dpi=150)
@@ -625,7 +625,7 @@ summary = dict(
     n_genes=int(meta_df["gene"].nunique()),
     n_regions_per_sample=200,
     target="|g_r| = |sum over 282 motif channels of J[r,m] * x[r,m]|",
-    jacobian_source="fine-tuned LoRA hepatocytes",
+    jacobian_source="fine-tuned LoRA neurons",
     per_gene_scoring=True,
     median_a_tss_threshold=q_a_tss,
     median_a_region_threshold=q_a_region,

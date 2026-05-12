@@ -61,7 +61,7 @@ bash scripts/course_03_finetune_lora.sh
 The default output checkpoint is:
 
 ```text
-$GET_COURSE_WORK/output/finetune_multiome1_human/lora_leaveout_hepatocytes/checkpoints/best.ckpt
+$GET_COURSE_WORK/output/finetune_multiome1_human/lora_leaveout_neurons/checkpoints/best.ckpt
 ```
 
 ## 4. Base inference
@@ -70,7 +70,7 @@ $GET_COURSE_WORK/output/finetune_multiome1_human/lora_leaveout_hepatocytes/check
 bash scripts/course_04_infer_base.sh
 ```
 
-This runs held-out hepatocyte inference from the pretrained checkpoint.
+This runs held-out neuron inference from the pretrained checkpoint.
 
 ## 5. Fine-tuned inference
 
@@ -78,7 +78,7 @@ This runs held-out hepatocyte inference from the pretrained checkpoint.
 bash scripts/course_05_infer_finetuned.sh
 ```
 
-This runs the same held-out hepatocyte inference with the LoRA checkpoint from stage 3.
+This runs the same held-out neuron inference with the LoRA checkpoint from stage 3.
 
 ## After inference
 
