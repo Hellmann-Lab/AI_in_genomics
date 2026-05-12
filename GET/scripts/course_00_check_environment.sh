@@ -15,6 +15,7 @@ command -v apptainer >/dev/null 2>&1 || { echo "[missing] apptainer command" >&2
 [[ -x "$GET_RSCRIPT" ]] || { echo "[missing] executable Rscript: $GET_RSCRIPT" >&2; missing=1; }
 course_require_file "$GET_MULTIOME_RDS" "multiome1 Seurat RDS" || missing=1
 course_require_file "$GET_MOTIF_BED" "motif BED" || missing=1
+course_require_file "$GET_MOTIF_BED_INDEX" "motif BED tabix index" || missing=1
 course_require_file "$GET_PRETRAINED_CKPT" "pretrained checkpoint" || missing=1
 
 if [[ ! -e "$GET_SIF" ]]; then

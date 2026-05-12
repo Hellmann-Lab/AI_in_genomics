@@ -12,6 +12,7 @@ export GET_RSCRIPT="${GET_RSCRIPT:-/opt/R/4.5.0/bin/Rscript}"
 
 export GET_MULTIOME_RDS="${GET_MULTIOME_RDS:-$GET_COURSE_DATA/multiome_1/seu_multi_list_macsCA_assay.RDS}"
 export GET_MOTIF_BED="${GET_MOTIF_BED:-$GET_COURSE_DATA/annotations/hg38.archetype_motifs.v1.0.bed.gz}"
+export GET_MOTIF_BED_INDEX="${GET_MOTIF_BED_INDEX:-$GET_MOTIF_BED.tbi}"
 export GET_PRETRAINED_CKPT="${GET_PRETRAINED_CKPT:-$GET_COURSE_DATA/checkpoints/regulatory_inference_checkpoint_fetal_adult/finetune_fetal_adult_leaveout_astrocyte/checkpoint-best.pth}"
 export GET_MULTIOME_ZARR="${GET_MULTIOME_ZARR:-$GET_COURSE_WORK/multiome_1/preprocessed/multiome1_human.zarr}"
 export GET_LORA_CKPT="${GET_LORA_CKPT:-$GET_COURSE_WORK/output/finetune_multiome1_human/lora_leaveout_hepatocytes/checkpoints/best.ckpt}"

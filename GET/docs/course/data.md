@@ -12,6 +12,7 @@ Default large-file layout:
     seu_multi_list_macsCA_assay.RDS
   annotations/
     hg38.archetype_motifs.v1.0.bed.gz
+    hg38.archetype_motifs.v1.0.bed.gz.tbi
   checkpoints/
     regulatory_inference_checkpoint_fetal_adult/
       finetune_fetal_adult_leaveout_astrocyte/
