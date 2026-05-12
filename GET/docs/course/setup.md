@@ -52,11 +52,11 @@ All later Python steps run inside the Apptainer image.
 
 ## Interactive Python
 
-Students can use the server JupyterHub for analysis notebooks, or start Jupyter Lab inside the GET container when they need the exact course Python environment:
+Students can use the server JupyterHub directly for analysis notebooks, or install the GET container kernel when they need the exact course Python environment:
 
 ```bash
 cd ~/AI_in_genomics/GET
-bash scripts/course_jupyter_lab_container.sh
+bash scripts/course_install_container_kernel.sh
 ```
 
-See [interactive_python.md](interactive_python.md) for details, including SSH port forwarding and JupyterHub notes.
+Restart the JupyterHub server from the Hub control panel, then choose `GET container (course)` in a new Launcher. See [interactive_python.md](interactive_python.md) for details.

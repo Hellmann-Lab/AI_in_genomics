@@ -19,6 +19,7 @@ set -euo pipefail
 
 : "${GET_REPO:?GET_REPO is required}"
 source "$GET_REPO/scripts/course_env.sh"
+export PYTHONPATH="$GET_REPO${PYTHONPATH:+:$PYTHONPATH}"
 
 exec apptainer exec --nv \
   -B "$HOME:$HOME" \
