@@ -70,6 +70,23 @@ bash scripts/course_jupyter_lab_container.sh
 
 Use the same port in any SSH tunnel.
 
+## Container Jupyter URL works in Cursor but not JupyterHub
+
+This is expected if you click the `http://127.0.0.1:<port>/...` URL from the JupyterHub web terminal. In that browser context, `127.0.0.1` is your own computer, not the teaching server.
+
+When the wrapper detects JupyterHub, use the additional `/user/<username>/proxy/<port>/lab?token=...` path it prints. If that path gives a `404`, ask whether `jupyter-server-proxy` is enabled on the Hub, or use the normal JupyterHub notebooks instead.
+
+## GET container kernel is missing in JupyterHub
+
+Install the user-local kernel spec and refresh the JupyterHub launcher:
+
+```bash
+cd ~/AI_in_genomics/GET
+bash scripts/course_install_container_kernel.sh
+```
+
+Then choose `GET container (course)` as the notebook kernel.
+
 ## Hydra says a path is missing
 
 Run:

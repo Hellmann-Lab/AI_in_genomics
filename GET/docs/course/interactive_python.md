@@ -29,6 +29,15 @@ zarr_path = course_work / "multiome_1" / "preprocessed" / "multiome1_human.zarr"
 
 JupyterHub is usually the best choice for downstream analysis after inference. If a notebook needs the exact GET Python environment, use the container option below.
 
+For the exact GET Python environment inside the normal JupyterHub interface, install the course container kernel once:
+
+```bash
+cd ~/AI_in_genomics/GET
+bash scripts/course_install_container_kernel.sh
+```
+
+Then refresh the JupyterHub launcher and choose the `GET container (course)` kernel. This avoids running a second Jupyter server and is the preferred container-backed option from JupyterHub.
+
 ## Option B: Jupyter Lab in the GET container
 
 This starts Jupyter Lab with the same Python packages used by the preprocessing, zarr, fine-tuning, and inference wrappers.
@@ -60,6 +69,14 @@ ssh -L 8888:127.0.0.1:8888 <user>@<teaching-server>
 ```
 
 Then open the `http://127.0.0.1:8888/lab?...` URL printed by Jupyter Lab. If you changed `GET_JUPYTER_PORT`, use the same port in the tunnel.
+
+If you start the script from a JupyterHub terminal, do not use the printed `127.0.0.1` URL directly. In a browser launched from JupyterHub, `127.0.0.1` points to your own laptop, not to the teaching server. The script detects JupyterHub and also prints a path like:
+
+```text
+/user/<username>/proxy/8888/lab?token=...
+```
+
+Open that path in the same JupyterHub browser session. If it gives a `404`, the Hub does not have `jupyter-server-proxy` enabled; in that case use the `GET container (course)` JupyterHub kernel, or start the container Jupyter Lab from an SSH/Cursor terminal with port forwarding.
 
 ## Practical conventions
 

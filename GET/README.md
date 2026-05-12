@@ -25,6 +25,12 @@ bash scripts/course_04_infer_base.sh
 bash scripts/course_05_infer_finetuned.sh
 ```
 
+For interactive Python, use JupyterHub directly or install the container-backed Hub kernel:
+
+```bash
+bash scripts/course_install_container_kernel.sh
+```
+
 The scripts use these defaults, which can be overridden before running them:
 
 ```bash
