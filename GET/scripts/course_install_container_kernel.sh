@@ -57,7 +57,7 @@ spec = {
 }
 with open(kernel_json, "w", encoding="utf-8") as handle:
     json.dump(spec, handle, indent=2)
-    handle.write("\\n")
+    handle.write("\n")
 PY
 
 echo "[ok] installed Jupyter kernel:"
