@@ -71,6 +71,20 @@ The dataset contains embeddings in `@reductions`. Make a plot showing one of the
 
 Prepare the dataset for GET. This happens in two steps, both of which write into `~/GET_course_work`. First, `scripts/course_01_prepare_multiome1.sh` extracts the human cells from the Seurat object and aggregates ATAC/RNA per cell type. Then `scripts/course_02_build_zarr.sh` turns that into the `.zarr` file that GET reads (`course_02` needs the output of `course_01`, so run them in order). Explain in your own words what was done in these steps. For now, use only human data.
 
+Hints for exploring the dataset:
+
+* The Seurat object is at `~/data/GET_course_data/multiome_1/seu_multi_list_macsCA_assay.RDS` (env var `GET_MULTIOME_RDS`). It is a **named list of Seurat objects, one per species** — `readRDS(...)` then `names(listObj)` shows the species; `listObj$human` is the human object.
+* The relevant metadata columns (`listObj$human@meta.data`) are `final_annotation` (the cell-type label used downstream), `doubletCall` (keep `"singlet"`), and the species. Use these to build the per-cell-type / per-species counts.
+* For the cells-per-cell-type-and-species overview, pull `@meta.data` from each species object into one data frame and plot with ggplot; use `facet_wrap(~species)` (per your facet rule) for the bar chart.
+* The embeddings live in `listObj$human@reductions` (e.g. UMAP). Plot with `Seurat::DimPlot(listObj$human, reduction = "umap", group.by = "final_annotation")`.
+
+Hints for the two preparation steps (so you can explain them):
+
+* `course_01` runs `tutorials/prepare_multiome1_human.R` on the **host R** (not the container — it needs Seurat/Signac). It: keeps `final_annotation != NA & doubletCall == "singlet"`; keeps only `chr*` peaks (drops `chrM`, `chrY`, `chrUn*`, and `_`/alt contigs); drops cell types with `< min_cells` (`min_cells <- 100`, which removes e.g. hepatocytes 49 cells); computes a normalized ATAC score (`aTPM`) and RNA `TPM` per cell type. It writes `<celltype>.atac.bed`, `<celltype>.rna.csv`, and `celltypes.txt` into `~/GET_course_work/multiome_1/preprocessed/`.
+* The eight retained human cell types are: `cardiac_fibroblasts, cardiac_progenitor_cells, early_ectoderm, glial_cells, mesoderm_ii, neural_crest_i, neurons, smooth_muscle_cells`.
+* `course_02` runs `tutorials/build_multiome1_human_zarr.py` **inside the container** and produces `~/GET_course_work/multiome_1/preprocessed/multiome1_human.zarr` (env var `GET_MULTIOME_ZARR`). It scans the motif BED (`GET_MOTIF_BED = hg38.archetype_motifs.v1.0.bed.gz`) over the peaks and attaches expression from GENCODE v40.
+* Per your Rscript rule, if you write your own R exploration, run it with `/opt/R/4.5.2/lib/R/bin/Rscript`. (Note the course default `GET_RSCRIPT` points at `/opt/R/4.5.0`; you can override it if needed.)
+
 ## 2. Run inference with the pretrained GET model
 
 Here, we want to run inference using the pretrained GET model, i.e. predict gene expression using the pretrained model and cell-type-specific ATAC data.
@@ -86,6 +100,17 @@ Look at the output. What information do the different files contain?
 Where is your predicted gene expression data?
 
 Since you have multiome data, you can compare the predicted expression given your ATAC data with the observed expression. How well does it match?
+
+Hints:
+
+* `scripts/course_04_infer_base.sh` runs the pretrained checkpoint (`GET_PRETRAINED_CKPT`) with the same config as fine-tuning (`own_finetune_multiome1_human`) but with `stage=predict task.test_mode=interpret task.gene_list=null run.run_name=interpret_base_neurons`. It predicts expression for the **held-out cell type** set by `leave_out_celltypes` in `get_model/config/dataset/multiome1_human.yaml` (default `neurons`).
+* Options you can decide on and pass as Hydra overrides after the script name:
+  * `task.gene_list=null` predicts all genes; set e.g. `task.gene_list=MYC,SOX10,SOX2` to focus on a few.
+  * `dataset.leave_out_celltypes=<celltype>` picks which cell type is predicted (must be one of the eight; this is the cell type held back for evaluation).
+  * `run.run_name=<name>` names the output folder (otherwise you overwrite `interpret_base_neurons`).
+* The output goes to `~/GET_course_work/output/finetune_multiome1_human/interpret_base_neurons/<celltype>.zarr` (e.g. `neurons.zarr`). Inside, the obs/pred arrays have shape `(n_samples, 200, 2)` (200 regions per sample, 2 = the two strands/TSS outputs); the interpret run also stores `jacobians/...` and the `input/region_motif` used in Step 7.
+* Your **predicted expression** is in that `.zarr`; your **observed expression** is the `<celltype>.rna.csv` (column `TPM`) written in Step 1.
+* Easiest way to read the zarr and collapse it to one value per gene: adapt `tutorials/compare_base_vs_finetuned.ipynb`, which already loads the interpret zarr and does the strand-aware per-gene collapse. For the observed-vs-predicted scatter/correlation, use ggplot in R (per your rules).
 
 ## 3. Fine-tuning
 
@@ -146,6 +171,14 @@ optimizer:
 
 Run fine-tuning. Depending on your data and parameter choice, this may run for a few hours. Coordinate within your group so only one person starts the first run. Also coordinate with other groups, since GPU resources are limited.
 
+Concrete hints:
+
+* The three most common knobs are already wired to env vars in `course_env.sh`, so you can set them without editing YAML: `GET_TRAIN_EPOCHS` (default 10), `GET_WARMUP_EPOCHS` (default 1), `GET_BATCH_SIZE` (default 16, lower to 8/4 if you hit GPU out-of-memory). The wrapper also forwards any extra Hydra overrides you append, e.g. `dataset.leave_out_celltypes=glial_cells`.
+* The split lives entirely in `get_model/config/dataset/multiome1_human.yaml`: `celltypes` (the training set) and `leave_out_celltypes` (default `neurons`). The held-out cell type should still appear in `celltypes` — GET trains on the others and evaluates the held-out one.
+* **Important path coupling:** the run writes its checkpoint to `~/GET_course_work/output/finetune_multiome1_human/<run.run_name>/checkpoints/best.ckpt`, and `run.run_name` defaults to `lora_leaveout_neurons` (in `own_finetune_multiome1_human.yaml`). The default `GET_LORA_CKPT` in `course_env.sh` points at exactly that path. If you change the held-out cell type (and therefore `run.run_name`), update `GET_LORA_CKPT` to match, or Step 5 will load the wrong / a missing checkpoint.
+* Sanity check against `docs/course/multiome1_reference_run_summary.md`: on held-out neurons you should see the fine-tuned model clearly beat the base model (the instructor smoke run on held-out hepatocytes went from Pearson ~0.12 base to ~0.77 fine-tuned). Treat these as a rough sanity check, not a target.
+* Note from the reference run: simply increasing `epochs` did **not** substantially improve the result — so "more epochs" alone is not a strong analysis; changing the split is more informative.
+
 While the model is training, the others can already prepare the validation analysis and look more closely at the pretrained inference output.
 
 When fine-tuning has finished, run inference again on the left-out validation data using your fine-tuned model. This is done with `scripts/course_05_infer_finetuned.sh` (the fine-tuned counterpart of `scripts/course_04_infer_base.sh` from Step 2). Then compare:
@@ -167,6 +200,14 @@ The main question is:
 > Did fine-tuning improve expression inference on data that were not used for fine-tuning?
 
 `tutorials/compare_base_vs_finetuned.ipynb` is a starting template for reading the base and fine-tuned inference outputs and comparing them; you can adapt it to your own split.
+
+Hints on inputs and where things come from:
+
+* The notebook reads the two interpret zarrs from Steps 2 and 3: `.../interpret_base_neurons/<celltype>.zarr` (base) and `.../interpret_ft_neurons/<celltype>.zarr` (fine-tuned). If you used a different split, point it at the right folders with the env vars `GET_BASE_INTERPRET_ZARR`, `GET_FT_INTERPRET_ZARR`, and set `GET_COMPARE_OUT_DIR` for the figures.
+* It already collapses the `(n_samples, 200, 2)` arrays to one observed and one predicted value per gene (strand-aware) and computes Pearson/Spearman/R²/MSE — reuse that collapse, then do plotting in R/ggplot per your rules.
+* Observed expression is the `<celltype>.rna.csv` (column `TPM`) from Step 1. For the baselines: **mean expression** = average `TPM` across the training cell types' `.rna.csv` files; **TSS accessibility baseline** = the `aTPM` near each gene's TSS from the `<celltype>.atac.bed`; **most similar training cell type** = the training `.rna.csv` most correlated with the held-out one.
+* For the advanced ABC-style distance baseline, `tutorials/distance_model_comparison.py` reads the fine-tuned interpret zarr (override with `GET_FT_INTERPRET_ZARR`) and writes to `output/finetune_multiome1_human/distance_model_comparison/`.
+* Use `patchwork` to combine the scatter/barplot/heatmap panels, and `facet_wrap`/`facet_grid` when showing the same plot for base vs fine-tuned or across cell types (per your rules).
 
 Start with simple comparisons between observed and predicted expression:
 
@@ -212,6 +253,20 @@ You could check whether cell types are preserved via:
 
 * correlation matrices, i.e. how well each cell type correlates with each other cell type using expression data. Then you can compare whether the correlation matrix of the predicted data matches the correlation matrix of the input data.
 * PCA / UMAP → clustering.
+
+Hints:
+
+* The **observed pseudobulks already exist**: each `<celltype>.rna.csv` (column `TPM`) from Step 1 is one pseudo-cell per cell type. Stacking the eight files gives you a genes × cell-types observed matrix.
+* To get **predicted pseudobulks for every cell type**, you need one inference run per cell type, since inference predicts whichever cell type is held out. Loop `scripts/course_04_infer_base.sh` over the eight cell types, changing both the held-out cell type and the run name each time, e.g.:
+
+```bash
+for ct in cardiac_fibroblasts cardiac_progenitor_cells early_ectoderm glial_cells mesoderm_ii neural_crest_i neurons smooth_muscle_cells; do
+  bash scripts/course_04_infer_base.sh dataset.leave_out_celltypes=$ct run.run_name=predict_base_$ct
+done
+```
+
+  Then collapse each `.../predict_base_<ct>/<ct>.zarr` to one predicted value per gene (reuse the collapse from `tutorials/compare_base_vs_finetuned.ipynb`) to build the predicted genes × cell-types matrix.
+* Build a cell-type × cell-type correlation matrix for both the observed and the predicted matrix (`cor()` in R), then compare them side by side — plot the two heatmaps together with `patchwork`. For PCA/UMAP, treat each cell-type pseudobulk as one point and check whether related cell types (e.g. the cardiac ones) cluster together in both observed and predicted space.
 
 ## 6. Species transfer
 
@@ -274,7 +329,13 @@ Alternatively, we can aggregate over all regions per motif, telling us how much 
 
 You can see an example of this in `GET/tutorials/jacobian_analysis_neurons.ipynb`. You can adapt this directly to your dataset.
 
-You could now look at what motifs matter for a specific cell type and whether these match cell-type-specific motifs. You could also compare across species whether motif or region importance changes.
+Hints:
+
+* The Jacobian is produced automatically by the interpret runs from Steps 2/3 (that is what `task.test_mode=interpret` does), so you do **not** need a separate run — just reuse the `interpret_base_neurons/<celltype>.zarr` and `interpret_ft_neurons/<celltype>.zarr` outputs. Inside the zarr the arrays are at `jacobians/exp/{0,1}/input/region_motif`, with **283 channels** = 282 motif clusters + 1 accessibility channel.
+* The notebook already implements the two aggregations: the gene × motif contribution as `mean over regions r of jacobian[r,m] · input[r,m]`, and the per-region contribution as the sum over motifs. Point it at your zarrs with `GET_BASE_INTERPRET_ZARR` / `GET_FT_INTERPRET_ZARR`, set `GET_HOLDOUT_RNA_CSV` to your held-out `<celltype>.rna.csv`, and `GET_JACOBIAN_OUT_DIR` for figures.
+* To focus the Jacobian on specific genes (cheaper and easier to read), rerun inference with e.g. `task.gene_list=MYC,SOX10,SOX2,RET` instead of `task.gene_list=null`.
+* The motif channel names come from `tutorials/human_motif_cluster_id`; use it to map channel indices back to TF/motif-cluster names when you ask "which motifs matter for this cell type".
+* For the cross-species comparison (Step 6), run the same notebook on the cyno interpret zarrs and compare motif/region importance for matched cell types.
 
 ## 8. *In silico* perturbation
 
@@ -283,3 +344,14 @@ Perturbations are a common method in molecular and computational biology, where 
 In this case, we could perturb either the ATAC data directly, e.g. by deleting an ATAC peak near an important gene, or mask a motif family, e.g. a cell-type-specific enhancer.
 
 Then we could re-run inference and check how this changes the predicted expression. Does this change seem sensible for the perturbation? Do you think the model correctly models the effect of these perturbations?
+
+Hints:
+
+* There is no dedicated perturbation script — you build it yourself from the existing pipeline. The simplest ATAC perturbation works on the preprocessed files:
+  1. Copy your preprocessed folder to a new one (so you keep the unperturbed baseline), e.g. `~/GET_course_work/multiome_1/preprocessed_perturb/`.
+  2. In the relevant `<celltype>.atac.bed`, find the peak(s) near your target gene's TSS and set the `aTPM` value (4th column) to `0`, or drop the peak. Keep contig naming consistent (`chr*` for human).
+  3. Point `GET_PREPROCESSED_DIR` and a new `GET_MULTIOME_ZARR` (e.g. `..._perturb.zarr`) at the copy and rebuild the zarr with `scripts/course_02_build_zarr.sh`.
+  4. Re-run inference (`scripts/course_04_infer_base.sh`, with a distinct `run.run_name`) on the perturbed zarr and compare predicted expression of the target gene (and neighbours) against the unperturbed run.
+* Choose a target where you expect a clear effect: a strongly cell-type-specific gene with a nearby accessible, high-importance peak (use the Step 7 Jacobian/region importance to pick a peak that the model says matters).
+* A motif-family perturbation is the more advanced variant: instead of editing a peak, zero out one motif channel in the `input/region_motif` matrix before the model forward pass. This is a code-level change, so start with the ATAC-peak perturbation above.
+* Interpret carefully: because you rebuild the zarr, the peak set feeding the region embedding also changes — compare against the matched unperturbed run, not across different splits.
