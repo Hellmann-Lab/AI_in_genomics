@@ -15,6 +15,8 @@ from scipy.sparse import coo_matrix, csr_matrix, load_npz
 from torch.utils.data import Dataset
 from tqdm import tqdm
 
+from get_model.dataset.custom_gtf import CustomGTF
+
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
@@ -122,18 +124,30 @@ def get_gencode_obj(genome_seq_zarr: dict | str):
     """
     Get Gencode object for genome sequence.
     """
-    # TODO: make this more flexible
     version_mapping = {
         "hg38": 44,
         "mm10": "M36",
     }
+
+    def build_annotation(assembly: str):
+        if assembly in version_mapping:
+            return Gencode(assembly, version=version_mapping[assembly])
+        gtf_path = os.environ.get("GET_GTF", "")
+        if gtf_path:
+            return CustomGTF(assembly=assembly, gtf_path=gtf_path)
+        known = ", ".join(sorted(version_mapping))
+        raise ValueError(
+            f"Assembly '{assembly}' is not one of the built-in Gencode assemblies "
+            f"({known}). Set GET_GTF to a local GTF file for custom assemblies."
+        )
+
     if isinstance(genome_seq_zarr, dict):
         gencode_obj = {}
         for assembly, _ in genome_seq_zarr.items():
-            gencode_obj[assembly] = Gencode(assembly, version=version_mapping[assembly])
+            gencode_obj[assembly] = build_annotation(assembly)
     elif isinstance(genome_seq_zarr, str):
         assembly = basename(genome_seq_zarr).split(".")[0]
-        gencode_obj = {assembly: Gencode(assembly, version=version_mapping[assembly])}
+        gencode_obj = {assembly: build_annotation(assembly)}
     return gencode_obj
 
 

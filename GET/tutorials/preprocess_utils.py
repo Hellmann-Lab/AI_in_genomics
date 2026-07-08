@@ -170,6 +170,7 @@ def create_peak_motif(peak_motif_bed, output_zarr, peak_bed, assembly="hg38"):
         sep="\t",
         header=None,
         names=["Chromosome", "Start", "End", "Motif_cluster", "Score"],
+        dtype={"Chromosome": str},
     )
 
     # Pivot the data
@@ -189,7 +190,11 @@ def create_peak_motif(peak_motif_bed, output_zarr, peak_bed, assembly="hg38"):
 
     # Read the original peak bed file
     original_peaks = pd.read_csv(
-        peak_bed, sep="\t", header=None, names=["Chromosome", "Start", "End", "Score"]
+        peak_bed,
+        sep="\t",
+        header=None,
+        names=["Chromosome", "Start", "End", "Score"],
+        dtype={"Chromosome": str},
     )
     # exclude chrM and chrY
     original_peaks = original_peaks[~original_peaks.Chromosome.isin(["chrM", "chrY"])]
@@ -255,7 +260,11 @@ def add_atpm(zarr_file, bed_file, celltype):
     for the specified cell type under this group.
     """
     df = pd.read_csv(
-        bed_file, sep="\t", header=None, names=["Chromosome", "Start", "End", "aTPM"]
+        bed_file,
+        sep="\t",
+        header=None,
+        names=["Chromosome", "Start", "End", "aTPM"],
+        dtype={"Chromosome": str},
     )
     df["Name"] = df.apply(
         lambda x: f'{x["Chromosome"]}:{x["Start"]}-{x["End"]}', axis=1
@@ -320,6 +329,7 @@ def add_exp(
                 sep="\t",
                 header=None,
                 names=["Chromosome", "Start", "End", "aTPM"],
+                dtype={"Chromosome": str},
             ).reset_index(),
             int64=True,
         )

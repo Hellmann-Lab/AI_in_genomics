@@ -1,0 +1,10 @@
+# Copy this file to multiome1_cyno.yaml and replace every TODO before running.
+zarr_path: ${oc.env:GET_MULTIOME_ZARR}
+celltypes: TODO_COMMA_SEPARATED_CYNO_CELLTYPES
+num_region_per_sample: 200
+transform: null
+leave_out_chromosomes: null
+quantitative_atac: true
+sampling_step: 100
+mask_ratio: 0.0
+leave_out_celltypes: TODO_HELD_OUT_CYNO_CELLTYPE_OR_NULL
