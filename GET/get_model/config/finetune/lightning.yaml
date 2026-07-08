@@ -1,6 +1,0 @@
-checkpoint: "path/to/checkpoint.ckpt"
-model_key: "state_dict"
-rename_config:
-  "model.": ""
-patterns_to_drop: []
-strict: True
