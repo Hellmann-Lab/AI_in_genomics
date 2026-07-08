@@ -83,7 +83,7 @@ Hints for the two preparation steps (so you can explain them):
 * `course_01` runs `tutorials/prepare_multiome1_human.R` on the **host R** (not the container — it needs Seurat/Signac). It: keeps `final_annotation != NA & doubletCall == "singlet"`; keeps only `chr*` peaks (drops `chrM`, `chrY`, `chrUn*`, and `_`/alt contigs); drops cell types with `< min_cells` (`min_cells <- 100`, which removes e.g. hepatocytes 49 cells); computes a normalized ATAC score (`aTPM`) and RNA `TPM` per cell type. It writes `<celltype>.atac.bed`, `<celltype>.rna.csv`, and `celltypes.txt` into `~/GET_course_work/multiome_1/preprocessed/`.
 * The eight retained human cell types are: `cardiac_fibroblasts, cardiac_progenitor_cells, early_ectoderm, glial_cells, mesoderm_ii, neural_crest_i, neurons, smooth_muscle_cells`.
 * `course_02` runs `tutorials/build_multiome1_human_zarr.py` **inside the container** and produces `~/GET_course_work/multiome_1/preprocessed/multiome1_human.zarr` (env var `GET_MULTIOME_ZARR`). It scans the motif BED (`GET_MOTIF_BED = hg38.archetype_motifs.v1.0.bed.gz`) over the peaks and attaches expression from GENCODE v40.
-* Per your Rscript rule, if you write your own R exploration, run it with `/opt/R/4.5.2/lib/R/bin/Rscript`. (Note the course default `GET_RSCRIPT` points at `/opt/R/4.5.0`; you can override it if needed.)
+* Per your Rscript rule, if you write your own R exploration, run it with `/opt/R/4.5.0/bin/Rscript` (the course default `GET_RSCRIPT`).
 
 ## 2. Run inference with the pretrained GET model
 

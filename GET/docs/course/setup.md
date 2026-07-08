@@ -14,7 +14,7 @@ The wrapper scripts set sensible defaults, but all paths can be overridden:
 
 ```bash
 export GET_REPO=$HOME/AI_in_genomics/GET
-export GET_COURSE_DATA=$HOME/data/GET_course_data
+export GET_COURSE_DATA="$(readlink -f ~/data/GET_course_data)"
 export GET_COURSE_WORK=$HOME/GET_course_work
 export GET_SIF=$GET_COURSE_WORK/container/get.sif
 export GET_RSCRIPT=/opt/R/4.5.0/bin/Rscript
