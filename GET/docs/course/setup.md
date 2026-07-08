@@ -3,7 +3,7 @@
 The course setup assumes that each student receives:
 
 1. A copy of this Git repository in their home directory.
-2. A separate large-file directory, defaulting to `~/GET_course_data`.
+2. A separate large-file directory, defaulting to `~/data/GET_course_data` (each home has a `data` symlink into the shared `/data` mount).
 3. A working directory for generated files, defaulting to `~/GET_course_work`.
 
 The repo should not contain generated artifacts. Students can remove and recreate `~/GET_course_work` without damaging the Git checkout.
@@ -14,7 +14,7 @@ The wrapper scripts set sensible defaults, but all paths can be overridden:
 
 ```bash
 export GET_REPO=$HOME/AI_in_genomics/GET
-export GET_COURSE_DATA=$HOME/GET_course_data
+export GET_COURSE_DATA=$HOME/data/GET_course_data
 export GET_COURSE_WORK=$HOME/GET_course_work
 export GET_SIF=$GET_COURSE_WORK/container/get.sif
 export GET_RSCRIPT=/opt/R/4.5.0/bin/Rscript

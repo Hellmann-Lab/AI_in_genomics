@@ -1,9 +1,10 @@
 """Compare GET's learned TSS-CRE attributions against simple distance models.
 
-Inputs
+Inputs (resolved from $GET_COURSE_WORK, default ~/GET_course_work)
 ------
-- interpret_ft_neurons/neurons.zarr  (fine-tuned LoRA inference)
-- input_data/multiome_1/preprocessed/multiome1_human.zarr (motif names)
+- $GET_COURSE_WORK/output/finetune_multiome1_human/interpret_ft_neurons/neurons.zarr
+  (fine-tuned LoRA interpret output; also carries the motif names)
+  Override with $GET_FT_INTERPRET_ZARR.
 
 Per (sample, region) we extract:
     d_genomic  signed genomic distance between region midpoint and TSS midpoint (bp)

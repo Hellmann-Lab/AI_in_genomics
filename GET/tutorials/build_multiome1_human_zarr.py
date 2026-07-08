@@ -34,7 +34,7 @@ from preprocess_utils import (  # noqa: E402
 )
 
 
-COURSE_DATA = Path(os.environ.get("GET_COURSE_DATA", Path.home() / "GET_course_data"))
+COURSE_DATA = Path(os.environ.get("GET_COURSE_DATA", Path.home() / "data" / "GET_course_data"))
 COURSE_WORK = Path(os.environ.get("GET_COURSE_WORK", Path.home() / "GET_course_work"))
 
 PREPROC_DIR = Path(

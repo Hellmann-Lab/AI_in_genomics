@@ -8,7 +8,7 @@ The teaching server should contain one copy of this repo in each student home, p
 
 ```text
 ~/AI_in_genomics/GET/ # this course module
-~/GET_course_data/    # transferred input data and pretrained checkpoint
+~/data/GET_course_data/ # transferred input data and pretrained checkpoint (shared /data mount)
 ~/GET_course_work/    # generated zarrs, checkpoints, inference outputs
 ```
 
@@ -34,7 +34,7 @@ bash scripts/course_install_container_kernel.sh
 The scripts use these defaults, which can be overridden before running them:
 
 ```bash
-export GET_COURSE_DATA=$HOME/GET_course_data
+export GET_COURSE_DATA=$HOME/data/GET_course_data
 export GET_COURSE_WORK=$HOME/GET_course_work
 export GET_SIF=$GET_COURSE_WORK/container/get.sif
 export GET_RSCRIPT=/opt/R/4.5.0/bin/Rscript

@@ -37,7 +37,7 @@ getenv_default <- function(name, default) {
   if (nzchar(value)) value else default
 }
 
-course_data <- getenv_default("GET_COURSE_DATA", file.path(Sys.getenv("HOME"), "GET_course_data"))
+course_data <- getenv_default("GET_COURSE_DATA", file.path(Sys.getenv("HOME"), "data", "GET_course_data"))
 course_work <- getenv_default("GET_COURSE_WORK", file.path(Sys.getenv("HOME"), "GET_course_work"))
 
 rds_path <- getenv_default(

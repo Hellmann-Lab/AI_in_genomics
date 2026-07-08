@@ -11,7 +11,7 @@ def main(cfg):
     if "model" not in cfg or "dataset" not in cfg:
         raise ValueError(
             "No training config was loaded. Please pass --config-name, for example: "
-            "--config-name own_finetune_tutorial_pbmc"
+            "--config-name own_finetune_multiome1_human"
         )
     run_zarr(cfg)
 

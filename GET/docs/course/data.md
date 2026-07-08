@@ -7,7 +7,7 @@ This repo should contain code and documentation only. Large inputs and generated
 Default large-file layout:
 
 ```text
-~/GET_course_data/
+~/data/GET_course_data/
   multiome_1/
     seu_multi_list_macsCA_assay.RDS
   annotations/
@@ -39,4 +39,4 @@ The `_motif_staging` directory can be deleted after zarr creation.
 
 ## Instructor transfer checklist
 
-Before the course starts, copy the required input files into each student's `~/GET_course_data` with the layout shown above. If a shared read-only location is used instead, students can point the same environment variables in [setup.md](setup.md) at that location.
+Before the course starts, copy the required input files into `/data/GET_course_data` (reachable from every home as `~/data/GET_course_data`) with the layout shown above. If a shared read-only location is used instead, students can point the same environment variables in [setup.md](setup.md) at that location.
