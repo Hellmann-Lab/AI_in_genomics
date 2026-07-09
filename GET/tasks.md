@@ -51,6 +51,8 @@ The scripts in `scripts/` were tested before and should work without problems if
 
 `get_model/` contains the core scripts from the original repository used to run GET.
 
+`~/tmp` is a folder that everyone in this course can access, but only you can modify files that you created. This folder can be useful for you to share data among your group (e.g. fine-tuned model, data output, etc.)
+
 You can change any file you want, but since many scripts call other scripts, it is usually safer to copy files before modifying them.
 
 **How you actually run GET.** You never call GET's Python directly. Each `scripts/course_0*.sh` wrapper prepares the environment, launches the Apptainer container, and calls the same underlying GET entry point. What GET does is controlled entirely by [Hydra](https://hydra.cc) config files under `get_model/config/`, so you only ever edit YAML or pass command-line overrides, never the model code. Any extra arguments you append to a wrapper are forwarded straight to Hydra as dotted `key=value` overrides (there is an example in Step 3). Everything a run generates — checkpoints, logs, predictions, and plots — is written under `~/GET_course_work/output/`. See `tutorials/Configuration.md` for the full list of configurable options and `docs/course/pipeline.md` for the exact output paths.
@@ -105,7 +107,12 @@ Hints:
 
 * `scripts/course_04_infer_base.sh` runs the pretrained checkpoint (`GET_PRETRAINED_CKPT`) with the same config as fine-tuning (`own_finetune_multiome1_human`) but with `stage=predict task.test_mode=interpret task.gene_list=null run.run_name=interpret_base_neurons`. It predicts expression for the **held-out cell type** set by `leave_out_celltypes` in `get_model/config/dataset/multiome1_human.yaml` (default `neurons`).
 * Options you can decide on and pass as Hydra overrides after the script name:
-  * `task.gene_list=null` predicts all genes; set e.g. `task.gene_list=MYC,SOX10,SOX2` to focus on a few.
+  * `task.gene_list=null` predicts all genes. To focus on a few, put one gene per line in a file and pass the file path:
+    ```bash
+    printf "MYC\nSOX10\nSOX2\n" > "$HOME/GET_course_work/task2_genes.txt"
+    bash scripts/course_04_infer_base.sh task.gene_list=$HOME/GET_course_work/task2_genes.txt
+    ```
+    Avoid comma-separated CLI values for `task.gene_list`; Hydra treats unquoted commas as a sweep.
   * `dataset.leave_out_celltypes=<celltype>` picks which cell type is predicted (must be one of the eight; this is the cell type held back for evaluation).
   * `run.run_name=<name>` names the output folder (otherwise you overwrite `interpret_base_neurons`).
 * The output goes to `~/GET_course_work/output/finetune_multiome1_human/interpret_base_neurons/<celltype>.zarr` (e.g. `neurons.zarr`). Inside, the obs/pred arrays have shape `(n_samples, 200, 2)` (200 regions per sample, 2 = the two strands/TSS outputs); the interpret run also stores `jacobians/...` and the `input/region_motif` used in Step 7.
@@ -333,8 +340,14 @@ Hints:
 
 * The Jacobian is produced automatically by the interpret runs from Steps 2/3 (that is what `task.test_mode=interpret` does), so you do **not** need a separate run — just reuse the `interpret_base_neurons/<celltype>.zarr` and `interpret_ft_neurons/<celltype>.zarr` outputs. Inside the zarr the arrays are at `jacobians/exp/{0,1}/input/region_motif`, with **283 channels** = 282 motif clusters + 1 accessibility channel.
 * The notebook already implements the two aggregations: the gene × motif contribution as `mean over regions r of jacobian[r,m] · input[r,m]`, and the per-region contribution as the sum over motifs. Point it at your zarrs with `GET_BASE_INTERPRET_ZARR` / `GET_FT_INTERPRET_ZARR`, set `GET_HOLDOUT_RNA_CSV` to your held-out `<celltype>.rna.csv`, and `GET_JACOBIAN_OUT_DIR` for figures.
-* To focus the Jacobian on specific genes (cheaper and easier to read), rerun inference with e.g. `task.gene_list=MYC,SOX10,SOX2,RET` instead of `task.gene_list=null`.
+* To focus the Jacobian on specific genes (cheaper and easier to read), rerun inference with a gene-list file instead of `task.gene_list=null`:
+  ```bash
+  printf "MYC\nSOX10\nSOX2\nRET\n" > "$HOME/GET_course_work/task7_genes.txt"
+  bash scripts/course_04_infer_base.sh task.gene_list=$HOME/GET_course_work/task7_genes.txt
+  ```
+  Avoid comma-separated CLI values for `task.gene_list`; Hydra treats unquoted commas as a sweep.
 * The motif channel names come from `tutorials/human_motif_cluster_id`; use it to map channel indices back to TF/motif-cluster names when you ask "which motifs matter for this cell type".
+* The raw Jacobian aggregations do not need internet access. The optional TF-name mapping step uses `NrMotifV1`; on the course server it should load from the pre-staged pickle at `$GET_COURSE_DATA/annotations/nr_motif_v1.pkl` instead of downloading it on first use.
 * For the cross-species comparison (Step 6), run the same notebook on the cyno interpret zarrs and compare motif/region importance for matched cell types.
 
 ## 8. *In silico* perturbation

@@ -7,6 +7,7 @@ course_require_file "$GET_SIF" "Apptainer image"
 course_require_file "$GET_MOTIF_BED" "motif BED"
 course_require_file "$GET_MOTIF_BED_INDEX" "motif BED tabix index"
 course_require_file "$GET_PREPROCESSED_DIR/celltypes.txt" "preprocessed celltypes.txt"
+course_require_custom_gtf_if_needed
 
 if [[ "$GET_ZARR_BUILDER" = /* ]]; then
   course_require_file "$GET_ZARR_BUILDER" "zarr builder"

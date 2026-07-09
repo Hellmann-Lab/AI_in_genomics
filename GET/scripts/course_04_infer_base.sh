@@ -6,5 +6,17 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/course_env.sh"
 course_require_file "$GET_SIF" "Apptainer image"
 course_require_file "$GET_MULTIOME_ZARR" "multiome1 zarr"
 course_require_file "$GET_PRETRAINED_CKPT" "pretrained checkpoint"
+course_require_custom_gtf_if_needed
 
-course_apptainer bash -lc "cd \"$GET_REPO\" && PYTHONNOUSERSITE=1 HYDRA_FULL_ERROR=1 python3 -m get_model.debug.debug_run_region_zarr --config-name \"$GET_CONFIG_NAME\" stage=predict task.test_mode=interpret task.gene_list=null run.run_name=\"$GET_BASE_INFER_RUN_NAME\" $*"
+course_parse_hydra_args "$@"
+cmd_args=(
+  "${COURSE_HYDRA_FLAGS[@]}"
+  --config-name "$GET_CONFIG_NAME"
+  stage=predict
+  task.test_mode=interpret
+  task.gene_list=null
+  "run.run_name=$GET_BASE_INFER_RUN_NAME"
+  "${COURSE_HYDRA_OVERRIDES[@]}"
+)
+
+course_apptainer bash -lc "cd $(printf "%q" "$GET_REPO") && PYTHONNOUSERSITE=1 HYDRA_FULL_ERROR=1 python3 -m get_model.debug.debug_run_region_zarr $(course_shell_join "${cmd_args[@]}")"

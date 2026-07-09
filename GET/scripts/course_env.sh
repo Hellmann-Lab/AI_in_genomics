@@ -27,9 +27,14 @@ export GET_ZARR_BUILDER="${GET_ZARR_BUILDER:-build_multiome1_human_zarr.py}"
 export GET_CONFIG_NAME="${GET_CONFIG_NAME:-own_finetune_multiome1_human}"
 export GET_ASSEMBLY="${GET_ASSEMBLY:-hg38}"
 export GET_GENCODE_VERSION="${GET_GENCODE_VERSION:-40}"
+export GET_CYNO_ANNOT_DIR="${GET_CYNO_ANNOT_DIR:-$GET_COURSE_DATA/annotations/make_cyno}"
+if [[ -z "${GET_GTF:-}" && ( "$GET_ASSEMBLY" == "macFas6" || "$GET_CONFIG_NAME" == *cyno* ) ]]; then
+  GET_GTF="$GET_CYNO_ANNOT_DIR/genes.gtf.gz"
+fi
 export GET_GTF="${GET_GTF:-}"
 export GET_GTF_ID_OR_NAME="${GET_GTF_ID_OR_NAME:-gene_name}"
 export GET_PROMOTER_EXTEND_BP="${GET_PROMOTER_EXTEND_BP:-300}"
+export GET_NR_MOTIF_V1_PKL="${GET_NR_MOTIF_V1_PKL:-$GET_COURSE_DATA/annotations/nr_motif_v1.pkl}"
 export GET_BASE_INFER_RUN_NAME="${GET_BASE_INFER_RUN_NAME:-interpret_base_neurons}"
 export GET_FINETUNED_INFER_RUN_NAME="${GET_FINETUNED_INFER_RUN_NAME:-interpret_ft_neurons}"
 
@@ -59,4 +64,60 @@ course_require_file() {
     echo "[missing] $label: $path" >&2
     return 1
   fi
+}
+
+course_require_custom_gtf_if_needed() {
+  if [[ "$GET_CONFIG_NAME" == *cyno* ]]; then
+    if [[ -z "$GET_GTF" ]]; then
+      echo "[missing] GET_GTF for cyno/macFas6 config '$GET_CONFIG_NAME'" >&2
+      echo "Set GET_GTF to a local GTF file. For cyno/macFas6, use:" >&2
+      echo "  export GET_GTF=\"$GET_CYNO_ANNOT_DIR/genes.gtf.gz\"" >&2
+      return 1
+    fi
+    course_require_file "$GET_GTF" "cyno/macFas6 GTF (GET_GTF)"
+    return
+  fi
+
+  case "$GET_ASSEMBLY" in
+    hg38|mm10)
+      return 0
+      ;;
+  esac
+
+  if [[ -z "$GET_GTF" ]]; then
+    echo "[missing] GET_GTF for assembly '$GET_ASSEMBLY'" >&2
+    echo "Set GET_GTF to a local GTF file. For cyno/macFas6, use:" >&2
+    echo "  export GET_GTF=\"$GET_CYNO_ANNOT_DIR/genes.gtf.gz\"" >&2
+    return 1
+  fi
+  course_require_file "$GET_GTF" "$GET_ASSEMBLY GTF (GET_GTF)"
+}
+
+course_parse_hydra_args() {
+  COURSE_HYDRA_FLAGS=()
+  COURSE_HYDRA_OVERRIDES=()
+  while (($#)); do
+    case "$1" in
+      --cfg|--package|--config-path|--config-name|--config-dir|--experimental-rerun|--info)
+        COURSE_HYDRA_FLAGS+=("$1")
+        shift
+        if (($#)); then
+          COURSE_HYDRA_FLAGS+=("$1")
+          shift
+        fi
+        ;;
+      --*)
+        COURSE_HYDRA_FLAGS+=("$1")
+        shift
+        ;;
+      *)
+        COURSE_HYDRA_OVERRIDES+=("$1")
+        shift
+        ;;
+    esac
+  done
+}
+
+course_shell_join() {
+  printf "%q " "$@"
 }
