@@ -47,6 +47,8 @@ GET itself, including data preprocessing, inference, and fine-tuning, only runs 
 
 The scripts in `scripts/` were tested before and should work without problems if you use them as described. You do not have to use them, but they might help you, since using the model is not entirely straightforward.
 
+Some options for these scripts are set through bash variables such as `GET_COURSE_WORK`, `GET_TRAIN_EPOCHS`, or `GET_LORA_CKPT`. These are variables in your terminal, not in R or Python. Writing `GET_TRAIN_EPOCHS=1 bash scripts/course_03_finetune_lora.sh` changes the value only for that one command. Writing `export GET_LORA_CKPT=...` keeps the value for later commands in the same terminal session. If you open a new terminal, set the exported variables again.
+
 `tutorials/` is a mix of helpful descriptions, tutorials from the original repository, and test scripts from us. See the `.md` files in particular. Some of these scripts are executed by the scripts in `scripts/`.
 
 `get_model/` contains the core scripts from the original repository used to run GET.
@@ -83,9 +85,7 @@ Hints for exploring the dataset:
 Hints for the two preparation steps (so you can explain them):
 
 * `course_01` runs `tutorials/prepare_multiome1_human.R` on the **host R** (not the container — it needs Seurat/Signac). It: keeps `final_annotation != NA & doubletCall == "singlet"`; keeps only `chr*` peaks (drops `chrM`, `chrY`, `chrUn*`, and `_`/alt contigs); drops cell types with `< min_cells` (`min_cells <- 100`, which removes e.g. hepatocytes 49 cells); computes a normalized ATAC score (`aTPM`) and RNA `TPM` per cell type. It writes `<celltype>.atac.bed`, `<celltype>.rna.csv`, and `celltypes.txt` into `~/GET_course_work/multiome_1/preprocessed/`.
-* The eight retained human cell types are: `cardiac_fibroblasts, cardiac_progenitor_cells, early_ectoderm, glial_cells, mesoderm_ii, neural_crest_i, neurons, smooth_muscle_cells`.
 * `course_02` runs `tutorials/build_multiome1_human_zarr.py` **inside the container** and produces `~/GET_course_work/multiome_1/preprocessed/multiome1_human.zarr` (env var `GET_MULTIOME_ZARR`). It scans the motif BED (`GET_MOTIF_BED = hg38.archetype_motifs.v1.0.bed.gz`) over the peaks and attaches expression from GENCODE v40.
-* Per your Rscript rule, if you write your own R exploration, run it with `/opt/R/4.5.0/bin/Rscript` (the course default `GET_RSCRIPT`).
 
 ## 2. Run inference with the pretrained GET model
 
@@ -117,7 +117,7 @@ Hints:
   * `run.run_name=<name>` names the output folder (otherwise you overwrite `interpret_base_neurons`).
 * The output goes to `~/GET_course_work/output/finetune_multiome1_human/interpret_base_neurons/<celltype>.zarr` (e.g. `neurons.zarr`). Inside, the obs/pred arrays have shape `(n_samples, 200, 2)` (200 regions per sample, 2 = the two strands/TSS outputs); the interpret run also stores `jacobians/...` and the `input/region_motif` used in Step 7.
 * Your **predicted expression** is in that `.zarr`; your **observed expression** is the `<celltype>.rna.csv` (column `TPM`) written in Step 1.
-* Easiest way to read the zarr and collapse it to one value per gene: adapt `tutorials/compare_base_vs_finetuned.ipynb`, which already loads the interpret zarr and does the strand-aware per-gene collapse. For the observed-vs-predicted scatter/correlation, use ggplot in R (per your rules).
+* Easiest way to read the zarr and collapse it to one value per gene: adapt `tutorials/compare_base_vs_finetuned.ipynb`, which already loads the interpret zarr and does the strand-aware per-gene collapse.
 
 ## 3. Fine-tuning
 
@@ -192,9 +192,6 @@ Concrete hints:
   ```
   Even a 1-epoch run can show the base-to-fine-tuned improvement, so use it to check the loop before committing to a longer run.
 * Sanity check against `docs/course/multiome1_reference_run_summary.md`: on held-out neurons you should see the fine-tuned model clearly beat the base model (the instructor smoke run on held-out hepatocytes went from Pearson ~0.12 base to ~0.77 fine-tuned). Treat these as a rough sanity check, not a target.
-* Note from the reference run: simply increasing `epochs` did **not** substantially improve the result — so "more epochs" alone is not a strong analysis. A group whose whole story is "we increased epochs" will have a thin result; changing the validation split is the more informative experiment.
-
-While the model is training, the others can already prepare the validation analysis and look more closely at the pretrained inference output.
 
 When fine-tuning has finished, run inference again on the left-out validation data using your fine-tuned model. This is done with `scripts/course_05_infer_finetuned.sh` (the fine-tuned counterpart of `scripts/course_04_infer_base.sh` from Step 2). Then compare:
 
@@ -221,8 +218,6 @@ Hints on inputs and where things come from:
 * The notebook reads the two interpret zarrs from Steps 2 and 3: `.../interpret_base_neurons/<celltype>.zarr` (base) and `.../interpret_ft_neurons/<celltype>.zarr` (fine-tuned). If you used a different split, point it at the right folders with the env vars `GET_BASE_INTERPRET_ZARR`, `GET_FT_INTERPRET_ZARR`, and set `GET_COMPARE_OUT_DIR` for the figures.
 * It already collapses the `(n_samples, 200, 2)` arrays to one observed and one predicted value per gene (strand-aware) and computes Pearson/Spearman/R²/MSE — reuse that collapse, then do plotting in R/ggplot per your rules.
 * Observed expression is the `<celltype>.rna.csv` (column `TPM`) from Step 1. For the baselines: **mean expression** = average `TPM` across the training cell types' `.rna.csv` files; **TSS accessibility baseline** = the `aTPM` near each gene's TSS from the `<celltype>.atac.bed`; **most similar training cell type** = the training `.rna.csv` most correlated with the held-out one.
-* For the advanced ABC-style distance baseline, `tutorials/distance_model_comparison.py` reads the fine-tuned interpret zarr (override with `GET_FT_INTERPRET_ZARR`) and writes to `output/finetune_multiome1_human/distance_model_comparison/`.
-* Use `patchwork` to combine the scatter/barplot/heatmap panels, and `facet_wrap`/`facet_grid` when showing the same plot for base vs fine-tuned or across cell types (per your rules).
 
 Start with simple comparisons between observed and predicted expression:
 
