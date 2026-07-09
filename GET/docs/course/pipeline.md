@@ -53,10 +53,18 @@ GET_BATCH_SIZE=16
 Students can override them before running:
 
 ```bash
-export GET_TRAIN_EPOCHS=20
-export GET_BATCH_SIZE=8
+GET_TRAIN_EPOCHS=1 bash scripts/course_03_finetune_lora.sh run.run_name=lora_leaveout_neurons_1epoch
+```
+
+Use the 1-epoch run as a fast feedback loop before committing to the default 10-epoch run. On the course server, fine-tuning took about 3.5 min/epoch in the reference run, so 10 epochs is about 35 min. Directly using or editing `get_model/config/training/finetune.yaml` leaves its `epochs: 50` default in play, which is about 3 h at that speed.
+
+For the default run:
+
+```bash
 bash scripts/course_03_finetune_lora.sh
 ```
+
+The observed run used about 4.3 GB of a 48 GB GPU, so memory is not the expected bottleneck with the default batch size. The practical scheduling constraint is that course configs use `num_devices=1`, so active fine-tune jobs serialize on available GPU slots.
 
 The default output checkpoint is:
 

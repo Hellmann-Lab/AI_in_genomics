@@ -29,9 +29,11 @@ If the teaching server has no internet access, ask for a pre-staged shared `get.
 export GET_SIF=$GET_COURSE_DATA/container/get.sif
 ```
 
-## Out of memory during fine-tuning
+## If you actually hit OOM during fine-tuning
 
-Lower the batch size:
+The reference fine-tune used about 4.3 GB of a 48 GB GPU, so the default `GET_BATCH_SIZE=16` is conservative on the course server. Do not lower batch size just because of generic memory warnings; the usual constraint is serialized jobs on `num_devices=1`, not GPU memory.
+
+If your run really fails with a CUDA OOM error, lower the batch size:
 
 ```bash
 export GET_BATCH_SIZE=8

@@ -40,6 +40,14 @@ The original instructor smoke run compared held-out hepatocyte expression predic
 
 These values are a sanity check, not a target to copy. Students should rerun the pipeline and then design their own analysis or comparison.
 
+## Runtime and resource notes
+
+- Fine-tuning was fast in the reference run: about 3.5 min/epoch.
+- The course wrapper default, `GET_TRAIN_EPOCHS=10`, should therefore take about 35 min.
+- Directly using or editing `get_model/config/training/finetune.yaml` leaves its `epochs: 50` default in play, which is about 3 h at this speed.
+- GPU memory was not the limiting resource: the run used about 4.3 GB of a 48 GB GPU.
+- A 1-epoch run already showed the base-to-fine-tuned improvement, so it is useful as a quick feedback loop before a longer run.
+
 ## Caveats
 
 - The Seurat extraction step used host R because the container did not include Seurat/Signac.

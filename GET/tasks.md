@@ -136,7 +136,7 @@ Fine-tuning is run with `scripts/course_03_finetune_lora.sh`. Its default config
 You can change parameters either by editing those YAML files or by appending Hydra overrides to the wrapper, for example:
 
 ```bash
-bash scripts/course_03_finetune_lora.sh dataset.leave_out_celltypes=glial_cells training.epochs=20
+bash scripts/course_03_finetune_lora.sh dataset.leave_out_celltypes=glial_cells run.run_name=lora_leaveout_glial_cells
 ```
 
 Do not change the model architecture (number of layers, embedding size, number of motifs). Those are fixed by the pretrained checkpoint, and changing them will stop the checkpoint from loading.
@@ -151,7 +151,7 @@ Start with the default fine-tuning configuration. Only change the parameters tha
 | `leave_out_chromosomes` | Chromosome(s) held out for validation                           |
 | `use_lora`              | Use LoRA adapters instead of full fine-tuning; recommended      |
 | `epochs`                | Number of fine-tuning epochs                                    |
-| `batch_size`            | Number of samples per batch; lower if you run out of GPU memory |
+| `batch_size`            | Number of samples per batch; lower only if you actually hit OOM |
 | `run_name`              | Informative name for your run                                   |
 
 Exactly one of `leave_out_celltypes` or `leave_out_chromosomes` should usually be set. Do not try to tune many parameters at once.
@@ -176,15 +176,23 @@ optimizer:
   weight_decay: 0.05
 ```
 
-Run fine-tuning. Depending on your data and parameter choice, this may run for a few hours. Coordinate within your group so only one person starts the first run. Also coordinate with other groups, since GPU resources are limited.
+Run fine-tuning. On the course server, the observed runtime is about 3.5 min/epoch, so the wrapper default of `GET_TRAIN_EPOCHS=10` should take about 35 min. A multi-hour run only applies if you bypass the wrapper or directly use/edit `get_model/config/training/finetune.yaml`, whose default is `epochs: 50` (about 3 h at this speed). Coordinate within your group so only one person starts the first run. Also coordinate with other groups, since each fine-tune uses `num_devices=1` and the practical constraint is serialized GPU jobs, not memory.
 
 Concrete hints:
 
-* The three most common knobs are already wired to env vars in `course_env.sh`, so you can set them without editing YAML: `GET_TRAIN_EPOCHS` (default 10), `GET_WARMUP_EPOCHS` (default 1), `GET_BATCH_SIZE` (default 16, lower to 8/4 if you hit GPU out-of-memory). The wrapper also forwards any extra Hydra overrides you append, e.g. `dataset.leave_out_celltypes=glial_cells`.
+* The three most common knobs are already wired to env vars in `course_env.sh`, so you can set them without editing YAML: `GET_TRAIN_EPOCHS` (default 10), `GET_WARMUP_EPOCHS` (default 1), `GET_BATCH_SIZE` (default 16). The default batch size is conservative: the reference fine-tune used about 4.3 GB of a 48 GB GPU. Do not reduce batch size just because of generic OOM warnings; lower it only after an actual OOM on your run. The wrapper also forwards any extra Hydra overrides you append, e.g. `dataset.leave_out_celltypes=glial_cells`.
 * The split lives entirely in `get_model/config/dataset/multiome1_human.yaml`: `celltypes` (the training set) and `leave_out_celltypes` (default `neurons`). The held-out cell type should still appear in `celltypes` — GET trains on the others and evaluates the held-out one.
 * **Important path coupling:** the run writes its checkpoint to `~/GET_course_work/output/finetune_multiome1_human/<run.run_name>/checkpoints/best.ckpt`, and `run.run_name` defaults to `lora_leaveout_neurons` (in `own_finetune_multiome1_human.yaml`). The default `GET_LORA_CKPT` in `course_env.sh` points at exactly that path. If you change the held-out cell type (and therefore `run.run_name`), update `GET_LORA_CKPT` to match, or Step 5 will load the wrong / a missing checkpoint.
+* For a fast feedback loop, run one epoch first with a distinct run name:
+  ```bash
+  GET_TRAIN_EPOCHS=1 bash scripts/course_03_finetune_lora.sh run.run_name=lora_leaveout_neurons_1epoch
+  export GET_LORA_CKPT="$HOME/GET_course_work/output/finetune_multiome1_human/lora_leaveout_neurons_1epoch/checkpoints/best.ckpt"
+  export GET_FINETUNED_INFER_RUN_NAME=interpret_ft_neurons_1epoch
+  bash scripts/course_05_infer_finetuned.sh
+  ```
+  Even a 1-epoch run can show the base-to-fine-tuned improvement, so use it to check the loop before committing to a longer run.
 * Sanity check against `docs/course/multiome1_reference_run_summary.md`: on held-out neurons you should see the fine-tuned model clearly beat the base model (the instructor smoke run on held-out hepatocytes went from Pearson ~0.12 base to ~0.77 fine-tuned). Treat these as a rough sanity check, not a target.
-* Note from the reference run: simply increasing `epochs` did **not** substantially improve the result — so "more epochs" alone is not a strong analysis; changing the split is more informative.
+* Note from the reference run: simply increasing `epochs` did **not** substantially improve the result — so "more epochs" alone is not a strong analysis. A group whose whole story is "we increased epochs" will have a thin result; changing the validation split is the more informative experiment.
 
 While the model is training, the others can already prepare the validation analysis and look more closely at the pretrained inference output.
 
@@ -196,7 +204,7 @@ When fine-tuning has finished, run inference again on the left-out validation da
 
 Ask: **Did fine-tuning improve expression prediction on data that were not used for fine-tuning?**
 
-If the first run worked and the server has resources, you can compare simple fine-tuning options, e.g. different left-out cell types, different numbers of epochs, or LoRA vs. full fine-tuning. Change only one major thing at a time, so that you can interpret the result.
+If the first run worked and the server has resources, compare validation splits first, e.g. different left-out cell types or a chromosome holdout. Epoch count can be a secondary check, but changing epochs alone is a weak main experiment. Change only one major thing at a time, so that you can interpret the result.
 
 ## 4. Validation
 
