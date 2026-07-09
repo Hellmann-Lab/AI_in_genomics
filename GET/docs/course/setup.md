@@ -16,7 +16,7 @@ The wrapper scripts set sensible defaults, but all paths can be overridden:
 export GET_REPO=$HOME/AI_in_genomics/GET
 export GET_COURSE_DATA="$(readlink -f ~/data/GET_course_data)"
 export GET_COURSE_WORK=$HOME/GET_course_work
-export GET_SIF=$GET_COURSE_WORK/container/get.sif
+export GET_SIF=$GET_COURSE_DATA/container/get.sif
 export GET_RSCRIPT=/opt/R/4.5.0/bin/Rscript
 ```
 
@@ -35,10 +35,11 @@ export GET_MULTIOME_ZARR=$GET_COURSE_WORK/multiome_1/preprocessed/multiome1_huma
 The course was tested with the GET Apptainer image built from:
 
 ```bash
+mkdir -p "$GET_COURSE_DATA/container"
 apptainer pull $GET_SIF docker://fuxialexander/get_model:latest
 ```
 
-If the teaching server has no internet access during the course, pre-stage `get.sif` in each student's `GET_COURSE_WORK/container/` or provide a shared read-only path and set `GET_SIF` accordingly.
+Download this once into the shared course data directory, or pre-stage it there before the course. Students should use the same shared `GET_SIF` path instead of downloading their own copy.
 
 ## R step
 

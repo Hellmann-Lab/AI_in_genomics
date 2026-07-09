@@ -4,11 +4,6 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/course_env.sh"
 
-# The teaching copy may keep the Apptainer image in the parallel GET checkout.
-if [[ ! -e "$GET_SIF" && -e "$HOME/GET/get_model/get.sif" ]]; then
-  export GET_SIF="$HOME/GET/get_model/get.sif"
-fi
-
 export GET_CYNO_ANNOT_DIR="${GET_CYNO_ANNOT_DIR:-$GET_COURSE_DATA/annotations/make_cyno}"
 export GET_CYNO_FASTA="${GET_CYNO_FASTA:-$GET_CYNO_ANNOT_DIR/genome.fa}"
 export GET_CYNO_GTF="${GET_CYNO_GTF:-$GET_CYNO_ANNOT_DIR/genes.gtf.gz}"

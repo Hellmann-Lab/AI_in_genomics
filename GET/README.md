@@ -7,8 +7,8 @@ This repository is the course copy of GET with the local multiome1 tutorial patc
 The teaching server should contain one copy of this repo in each student home, plus a separate data directory with the non-Git inputs. The default layout is:
 
 ```text
-~/AI_in_genomics/GET/ # this course module
-~/data/GET_course_data/ # transferred input data and pretrained checkpoint (shared /data mount)
+~/AI_in_genomics/GET/   # this course module
+~/data/GET_course_data/ # transferred input data, pretrained checkpoint, and Apptainer image
 ~/GET_course_work/    # generated zarrs, checkpoints, inference outputs
 ```
 
@@ -36,7 +36,7 @@ The scripts use these defaults, which can be overridden before running them:
 ```bash
 export GET_COURSE_DATA="$(readlink -f ~/data/GET_course_data)"
 export GET_COURSE_WORK=$HOME/GET_course_work
-export GET_SIF=$GET_COURSE_WORK/container/get.sif
+export GET_SIF=$GET_COURSE_DATA/container/get.sif
 export GET_RSCRIPT=/opt/R/4.5.0/bin/Rscript
 ```
 

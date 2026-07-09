@@ -8,6 +8,8 @@ Default large-file layout:
 
 ```text
 ~/data/GET_course_data/
+  container/
+    get.sif
   multiome_1/
     seu_multi_list_macsCA_assay.RDS
   annotations/
@@ -27,7 +29,6 @@ These are recreated by students and should not be provided as Git-tracked files:
 
 ```text
 ~/GET_course_work/
-  container/get.sif
   multiome_1/preprocessed/*.atac.bed
   multiome_1/preprocessed/*.rna.csv
   multiome_1/preprocessed/multiome1_human.zarr
@@ -39,4 +40,4 @@ The `_motif_staging` directory can be deleted after zarr creation.
 
 ## Instructor transfer checklist
 
-Before the course starts, copy the required input files into `/data/GET_course_data` (reachable from every home as `~/data/GET_course_data`) with the layout shown above. If a shared read-only location is used instead, students can point the same environment variables in [setup.md](setup.md) at that location.
+Before the course starts, copy the required input files into `/data/GET_course_data` (reachable from every home as `~/data/GET_course_data`) with the layout shown above. The Apptainer image should be downloaded once to `container/get.sif` in that shared data directory.

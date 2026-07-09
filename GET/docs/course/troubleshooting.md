@@ -19,14 +19,14 @@ Then run all Python steps in the container.
 Create it with:
 
 ```bash
-mkdir -p $GET_COURSE_WORK/container
+mkdir -p $GET_COURSE_DATA/container
 apptainer pull $GET_SIF docker://fuxialexander/get_model:latest
 ```
 
-If the teaching server has no internet access, ask for a pre-staged `get.sif` and set:
+If the teaching server has no internet access, ask for a pre-staged shared `get.sif` and set:
 
 ```bash
-export GET_SIF=/path/to/shared/get.sif
+export GET_SIF=$GET_COURSE_DATA/container/get.sif
 ```
 
 ## Out of memory during fine-tuning

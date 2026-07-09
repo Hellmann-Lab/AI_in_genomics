@@ -5,13 +5,17 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEFAULT_REPO="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 export GET_REPO="${GET_REPO:-$DEFAULT_REPO}"
-GET_COURSE_DATA="${GET_COURSE_DATA:-$HOME/data/GET_course_data}"
+GET_COURSE_DATA_DEFAULT="$HOME/data/GET_course_data"
+if [[ ! -e "$GET_COURSE_DATA_DEFAULT" && -e "$HOME/GET_course_data" ]]; then
+  GET_COURSE_DATA_DEFAULT="$HOME/GET_course_data"
+fi
+GET_COURSE_DATA="${GET_COURSE_DATA:-$GET_COURSE_DATA_DEFAULT}"
 if [[ -e "$GET_COURSE_DATA" ]]; then
   GET_COURSE_DATA="$(readlink -f "$GET_COURSE_DATA")"
 fi
 export GET_COURSE_DATA
 export GET_COURSE_WORK="${GET_COURSE_WORK:-$HOME/GET_course_work}"
-export GET_SIF="${GET_SIF:-$GET_COURSE_WORK/container/get.sif}"
+export GET_SIF="${GET_SIF:-$GET_COURSE_DATA/container/get.sif}"
 export GET_RSCRIPT="${GET_RSCRIPT:-/opt/R/4.5.0/bin/Rscript}"
 
 export GET_MULTIOME_RDS="${GET_MULTIOME_RDS:-$GET_COURSE_DATA/multiome_1/seu_multi_list_macsCA_assay.RDS}"
